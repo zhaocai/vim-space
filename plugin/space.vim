@@ -73,7 +73,8 @@
 "   endfunc
 "   set statusline+=%{SlSpace()}
 
-" TODO: Allow user defined commands?
+" TODO: Make the mapping assignments more dynamical, and allow user defined
+"       commands?
 
 if exists("g:space_debug")
     let g:space_no_character_movements = 0
@@ -88,59 +89,26 @@ if exists("g:space_debug")
     let g:space_no_quickfix = 0
     let g:space_no_undolist = 0
     let g:space_no_tags = 0
-    let g:space_disable_select_mode = 0
-    let g:space_no_second_prev_mapping = 0
     echomsg "Running space.vim in debug mode."
 elseif exists("g:space_loaded")
     finish
 endif
 let g:space_loaded = 1
 
-" Initialise default config vars values properly to avoid
-" using '!exists("g:space_foo") || !g:space_foo'
-if !exists("g:space_disable_select_mode")
-    let g:space_disable_select_mode = 0
-endif
-if !exists("g:space_no_second_prev_mapping")
-    let g:space_no_second_prev_mapping = 0
-endif
-
 " Mapping of <Space>/<S-Space> and possibly <BS>
-if !hasmapto('<Plug>SmartspaceNext')
-    if mapcheck("<Space>") == ""
-        nmap <unique> <Space> <Plug>SmartspaceNext
-    else
-        echo "space.vim: <Space> key already mapped. Please map another key to <Plug>SmartspaceNext."
-    endif
-endif
-if !hasmapto('<Plug>SmartspacePrev')
-    if mapcheck("<S-Space>") == ""
-        nmap <unique> <S-Space> <Plug>SmartspacePrev
-    else
-        echo "space.vim: <S-Space> key already mapped. Please map another key to <Plug>SmartspacePrev."
-    endif
-endif
-noremap <script> <expr> <silent> <Plug>SmartspaceNext <SID>do_space(0, v:char)
-noremap <script> <expr> <silent> <Plug>SmartspacePrev <SID>do_space(1, v:char)
+noremap <expr> <silent> <Space>   <SID>do_space(0, "<Space>")
+noremap <expr> <silent> <S-Space> <SID>do_space(1, "<S-Space>")
 
-if g:space_disable_select_mode
-    silent! sunmap <Plug>SmartspaceNext
-    silent! sunmap <Plug>SmartspacePrev
+if exists("g:space_disable_select_mode")
+    silent! sunmap <Space>
+    silent! sunmap <S-Space>
+    silent! sunmap <BS>
 endif
 
-" Backspace is only for console
-if !has("gui_running") && !g:space_no_second_prev_mapping
-    if !hasmapto('<Plug>SmartspacePrevnogui')
-        if mapcheck("<BS>") == ""
-            nmap <unique> <BS> <Plug>SmartspacePrevnogui
-        else
-            echo "space.vim: <BS> key already mapped. Please map another key to <Plug>SmartspacePrevnogui."
-        endif
-    endif
-    noremap <expr> <silent> <Plug>SmartspacePrevnogui <SID>do_space(1, v:char)
-
-    if g:space_disable_select_mode
-        silent! sunmap <Plug>SmartspacePrevnogui
+if mapcheck("<BS>") == "" || !has("gui_running")
+    noremap <expr> <silent> <BS>      <SID>do_space(1, "<BS>")
+    if exists("g:space_disable_select_mode")
+        silent! sunmap <BS>
     endif
 endif
 
@@ -154,7 +122,7 @@ if !exists("g:space_no_character_movements") || !g:space_no_character_movements
     noremap <expr> <silent> ; <SID>setup_space("char", ";")
     noremap <expr> <silent> , <SID>setup_space("char", ",")
 
-    if g:space_disable_select_mode
+    if exists("g:space_disable_select_mode")
         silent! sunmap f
         silent! sunmap F
         silent! sunmap t
@@ -191,7 +159,7 @@ if !exists("g:space_no_search") || !g:space_no_search
     noremap <expr> <silent> n  <SID>setup_space("search", "n")
     noremap <expr> <silent> N  <SID>setup_space("search", "N")
 
-    if g:space_disable_select_mode
+    if exists("g:space_disable_select_mode")
         silent! sunmap *
         silent! sunmap #
         silent! sunmap <kMultiply>
@@ -236,7 +204,7 @@ if !exists("g:space_no_diff") || !g:space_no_diff
     noremap <expr> <silent> ]c <SID>setup_space("diff", "]c")
     noremap <expr> <silent> [c <SID>setup_space("diff", "[c")
 
-    if g:space_disable_select_mode
+    if exists("g:space_disable_select_mode")
         silent! sunmap ]c
         silent! sunmap [c
     endif
@@ -250,7 +218,7 @@ if !exists("g:space_no_brace") || !g:space_no_brace
     noremap <expr> <silent> ]} <SID>setup_space("curly", "]}")
     noremap <expr> <silent> [{ <SID>setup_space("curly", "[{")
 
-    if g:space_disable_select_mode
+    if exists("g:space_disable_select_mode")
         silent! sunmap ])
         silent! sunmap [(
         silent! sunmap ]}
@@ -266,7 +234,7 @@ if !exists("g:space_no_method") || !g:space_no_method
     noremap <expr> <silent> ]M <SID>setup_space("method_end", "]M")
     noremap <expr> <silent> [M <SID>setup_space("method_end", "[M")
 
-    if g:space_disable_select_mode
+    if exists("g:space_disable_select_mode")
         silent! sunmap ]m
         silent! sunmap [m
         silent! sunmap ]M
@@ -282,7 +250,7 @@ if !exists("g:space_no_section") || !g:space_no_section
     noremap <expr> <silent> ][ <SID>setup_space("section_end", "][")
     noremap <expr> <silent> [] <SID>setup_space("section_end", "[]")
 
-    if g:space_disable_select_mode
+    if exists("g:space_disable_select_mode")
         silent! sunmap ]]
         silent! sunmap [[
         silent! sunmap ][
@@ -298,7 +266,7 @@ if !exists("g:space_no_folds") || !g:space_no_folds
     noremap <expr> <silent> ]z <SID>setup_space("fold_start", "]z")
     noremap <expr> <silent> [z <SID>setup_space("fold_start", "[z")
 
-    if g:space_disable_select_mode
+    if exists("g:space_disable_select_mode")
         silent! sunmap zj
         silent! sunmap zk
         silent! sunmap ]z
@@ -310,7 +278,7 @@ endif
 if !exists("g:space_no_tags") || !g:space_no_tags
     noremap <expr> <silent> <C-]> <SID>setup_space("tag", "\<C-]>")
 
-    if g:space_disable_select_mode
+    if exists("g:space_disable_select_mode")
         silent! sunmap <C-]>
     endif
 
@@ -324,7 +292,7 @@ if !exists("g:space_no_undolist") || !g:space_no_undolist
     noremap <expr> <silent> g- <SID>setup_space("undo", "g-")
     noremap <expr> <silent> g+ <SID>setup_space("undo", "g+")
 
-    if g:space_disable_select_mode
+    if exists("g:space_disable_select_mode")
         silent! sunmap g-
         silent! sunmap g+
     endif
@@ -342,9 +310,9 @@ endif
 "       list to remove mappings.
 command! SpaceRemoveMappings call <SID>remove_space_mappings()
 function! s:remove_space_mappings()
-    silent! unmap <Plug>SmartspaceNext
-    silent! unmap <Plug>SmartspacePrev
-    silent! unmap <Plug>SmartspacePrevnogui
+    silent! unmap <Space>
+    silent! unmap <S-Space>
+    silent! unmap <BS>
 
     silent! unmap f
     silent! unmap F
